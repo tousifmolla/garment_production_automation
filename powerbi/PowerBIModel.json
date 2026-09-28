@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "source": "Only the six derived Google Sheets report tabs, refreshed by rebuildReportingData().",
+  "importTables": {
+    "FactProduction": {"source":"ReportProduction","key":"Order ID","grain":"one row per production order"},
+    "FactTasks": {"source":"ReportTasks","key":"Task ID","grain":"one row per workflow task"},
+    "FactDepartmentPerformance": {"source":"ReportDepartmentPerformance","key":"Department ID","grain":"one row per department per refresh"},
+    "FactOrderCycle": {"source":"ReportOrderCycleTime","key":"Order ID|Department ID","grain":"one row per order stage"},
+    "FactDelivery": {"source":"ReportDelivery","key":"Metric|Snapshot Date","grain":"one row per delivery metric snapshot"},
+    "FactDailyProduction": {"source":"ReportDailyProduction","key":"Date|Department ID","grain":"one row per date and department"}
+  },
+  "dimensions": {
+    "DimDate": {"source":"DAX calendar generated from imported report-date columns","key":"Date","requiredColumns":["Date","Year","Month Number","Month","Quarter"]},
+    "DimDepartment": {"source":"ReportDepartmentPerformance","key":"Department ID","attributes":["Department Name"]}
+  },
+  "relationships": [
+    "DimDepartment[Department ID] 1:* FactProduction[Current Department ID] (single direction)",
+    "DimDepartment[Department ID] 1:* FactTasks[Department ID] (single direction)",
+    "DimDepartment[Department ID] 1:* FactDepartmentPerformance[Department ID] (single direction)",
+    "DimDepartment[Department ID] 1:* FactOrderCycle[Department ID] (single direction)",
+    "DimDepartment[Department ID] 1:* FactDailyProduction[Department ID] (single direction)",
+    "DimDate[Date] 1:* FactProduction[Order Date] active; Completion Date and Required Delivery Date inactive",
+    "DimDate[Date] 1:* FactTasks[Completed Date] inactive; Deadline inactive",
+    "DimDate[Date] 1:* FactDailyProduction[Date] active",
+    "DimDate[Date] 1:* FactDelivery[Snapshot Date] active"
+  ],
+  "modelRules": [
+    "Import only the six Report* tabs; do not import transactional or backup tabs.",
+    "Use one-way dimension-to-fact filtering; never relate facts directly.",
+    "Set all IDs and statuses to Text, quantities/counts to Whole Number, percentages/durations to Decimal Number, and report dates to Date or Date/Time.",
+    "Do not sum FactTasks or department-stage quantities to calculate final production quantity."
+  ]
+}

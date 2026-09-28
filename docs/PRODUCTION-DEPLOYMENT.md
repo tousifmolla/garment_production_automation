@@ -1,0 +1,3 @@
+# Production deployment
+
+Create and back up the production Sheet; bind the Apps Script project; set environment to `PRODUCTION`; run `initializeSystem`, `bootstrapInitialAdmin`, configure users/workflow/settings, then run `productionReadinessCheck`, `backupSystemData`, `setupTriggers`, and `validateTriggers`. Deploy Web App as the deploying user, restricted to authenticated Workspace users. Run the Phase 11 smoke test, email/reporting checks, then governed Power BI validation. Record deployment version and URL. Roll back code by redeploying a prior Apps Script version; restore data only after a new backup and explicit validation.

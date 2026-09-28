@@ -1,0 +1,25 @@
+/* Final local audit: deployment source completeness and cross-module contracts. */
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.join(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const scripts = ['Code.gs','Config.gs','Utils.gs','Database.gs','Setup.gs','Auth.gs','ExternalIdentity.gs','OtpAuth.gs','Users.gs','Orders.gs','Tasks.gs','Workflow.gs','Alerts.gs','Notifications.gs','Dashboard.gs','DepartmentDashboardServer.gs','AdminManagement.gs','Reporting.gs','Integration.gs','Operations.gs','Tests.gs'];
+const html = ['Index.html','CSS.html','JS.html','AdminDashboard.html','DepartmentDashboard.html'];
+scripts.concat(html, ['appsscript.json']).forEach(file => assert.ok(fs.existsSync(path.join(root, file)), 'Missing deployable file: ' + file));
+const deployable = [...scripts, ...html];
+const collisions = deployable.reduce((map, file) => { const base = path.basename(file, path.extname(file)); (map[base] ||= []).push(file); return map; }, {});
+assert.deepEqual(Object.values(collisions).filter(files => files.length > 1), [], 'Apps Script deployable basenames must be unique across .gs and .html files');
+const manifest = JSON.parse(read('appsscript.json'));
+assert.equal(manifest.runtimeVersion, 'V8');
+assert.equal(manifest.webapp.executeAs, 'USER_DEPLOYING');
+assert.equal(manifest.webapp.access, 'ANYONE');
+assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/spreadsheets'));
+const code = scripts.map(read).join('\n');
+['initializeSystem','verifySystemSetup','bootstrapInitialAdmin','verifyAdminBootstrapReadiness','checkInitialAdminConfig','verifyTriggerReadiness','verifyWebAppDeploymentReadiness','verifyLiveWebAppAcceptanceReadiness','diagnoseTriggerReadinessContext','checkScriptAuthorizationStatus','requestProductionAuthorization','createProductionOrder','completeTask','monitorDeadlines','processPendingNotifications','setupTriggers','installProductionTriggers','removeProductionTriggers','validateTriggers','rebuildReportingData','backupSystemData','verifyBackupRecoveryReadiness','runRecoveryTest','productionReadinessCheck','systemHealthCheck','requestEmailOtp','verifyEmailOtp','logoutOtpSession','getOtpWebAppProfile','invokeAuthenticated','getWebAppProfile'].forEach(name => assert.match(code, new RegExp('function\\s+' + name + '\\s*\\('), 'Missing function: ' + name));
+const index = read('Index.html');
+['CSS','AdminDashboard','DepartmentDashboard','JS'].forEach(name => assert.match(index, new RegExp("include\\('" + name + "'\\)")));
+assert.match(read('Code.gs'), /createTemplateFromFile\('Index'\)/);
+assert.ok(!scripts.some(file => /require\(['"]node:|child_process|node:fs/.test(read(file))), 'Node-only dependency found in Apps Script source');
+['docs/PHASE11-INTEGRATION-TEST.md','docs/DEPLOYMENT-CHECKLIST.md','docs/PRODUCTION-DEPLOYMENT.md','docs/GO-LIVE-CHECKLIST.md','docs/OPERATIONS-RUNBOOK.md','docs/TROUBLESHOOTING.md','docs/DISASTER-RECOVERY.md','docs/ARCHITECTURE.md'].forEach(file => assert.ok(fs.existsSync(path.join(root, file)), 'Missing operations doc: ' + file));
+console.log('Project audit passed: deployment files, manifest, server contracts, templates, local-runtime safety, and handover documents are complete.');

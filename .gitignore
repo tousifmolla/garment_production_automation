@@ -1,0 +1,27 @@
+
+# Exclude separate e-commerce project
+/multivendor_ecommerce_marketplace/
+
+# Dependencies
+/node_modules/
+
+# Temporary and generated files
+/tmp/
+/output/
+/.codex-ppt-build/
+*.inspect.ndjson
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Local clasp configuration
+.clasp.json
+
+# Operating system
+.DS_Store
+Thumbs.db

@@ -1,0 +1,21 @@
+# This project intentionally pushes only root-level Apps Script source files.
+# Everything else is denied by default.
+**/*
+
+#! Deployable Apps Script source
+!*.gs
+!*.html
+!appsscript.json
+
+# Explicit defence-in-depth exclusions for local-only content.
+tests/**
+docs/**
+powerbi/**
+scripts/**
+node_modules/**
+.git/**
+README.md
+package.json
+package-lock.json
+run-all.js
+phase*-dry-run.js

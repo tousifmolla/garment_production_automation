@@ -1,0 +1,18 @@
+{
+  "name": "garment-production-automation",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local verification and clasp workflow for the Garment Production Automation Apps Script project.",
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "deploy:check": "node tests/run-all.js && node scripts/deploy-check.js",
+    "gas:login": "clasp login",
+    "gas:status": "clasp status",
+    "gas:push": "clasp push",
+    "gas:pull": "clasp pull",
+    "gas:open": "clasp open-script"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}

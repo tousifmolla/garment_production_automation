@@ -1,0 +1,21 @@
+/* Phase 9 schema and reporting-layer contract check. */
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const config = fs.readFileSync(path.join(__dirname, '..', 'Config.gs'), 'utf8');
+const reporting = fs.readFileSync(path.join(__dirname, '..', 'Reporting.gs'), 'utf8');
+['ReportProduction', 'ReportTasks', 'ReportDepartmentPerformance', 'ReportOrderCycleTime', 'ReportDelivery', 'ReportDailyProduction'].forEach(name => assert.match(config, new RegExp(name)));
+['Product Name','Customer Name'].forEach(name => assert.match(config, new RegExp(name)));
+assert.match(reporting, /getOperationalReports/);
+assert.match(reporting, /getMyDepartmentReport/);
+assert.match(reporting, /rebuildReportingData/);
+assert.match(reporting, /requireAdmin_/);
+assert.match(reporting, /getActiveReportingMasterNames_/);
+['REPORT_PRODUCTION', 'REPORT_TASKS', 'REPORT_DEPARTMENT', 'REPORT_CYCLE', 'REPORT_DELIVERY', 'REPORT_DAILY'].forEach(key => assert.match(reporting, new RegExp(key)));
+const rebuildBody = reporting.slice(reporting.indexOf('function rebuildReportingData()'), reporting.indexOf('function validateReportingCertification()'));
+assert.ok(rebuildBody.length > 0, 'report rebuild implementation is present');
+assert.doesNotMatch(rebuildBody, /APP_CONFIG\.SHEETS\.(PRODUCTION_ORDERS|TASKS|TASK_HISTORY|AUDIT_LOG|USERS|DEPARTMENTS)/, 'report rebuild does not write transactional sheets directly');
+assert.match(reporting, /orderCycleTime/);
+assert.match(reporting, /deliveryRows/);
+assert.match(reporting, /dailyProduction/);
+console.log('Phase 9 dry run passed: all derived reporting datasets and authorized reporting endpoints are configured.');
